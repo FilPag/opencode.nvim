@@ -259,8 +259,8 @@ vim.api.nvim_create_autocmd("User", {
   callback = function(args)
     ---@type opencode.server.Event
     local event = args.data.event
-    ---@type number
-    local port = args.data.port
+    ---@type string
+    local url = args.data.url
 
     -- See the available event types and their properties
     vim.notify(vim.inspect(event))

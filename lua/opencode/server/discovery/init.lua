@@ -3,33 +3,31 @@ local M = {}
 ---Find an `opencode` server. Tries, in order:
 ---
 ---1. The currently subscribed server in `opencode.events`.
----2. The configured port in `require("opencode.config").opts.port`.
+---2. The configured URL in `require("opencode.config").opts.server.url`.
 ---3. All local servers that overlap with Neovim's CWD. Automatically returns if just one, otherwise prompts to select from those.
 ---@return Promise<opencode.server.Server>
 local function find()
   local Promise = require("opencode.promise")
-  local port_opt = require("opencode.config").opts.server.port
+  local url = require("opencode.config").opts.server and require("opencode.config").opts.server.url
   local connected_server = require("opencode.server").connected
 
   return connected_server and Promise.resolve(connected_server)
-    or type(port_opt) == "number" and require("opencode.server").new(port_opt):catch(function(err)
+    or type(url) == "string" and require("opencode.server").new(url):catch(function(err)
       if err then
-        error(err, 0)
-      else
-        error("No `opencode` responding on port " .. port_opt, 0)
+        error("Failed to connect to configured `opencode` server URL: " .. url, 0)
       end
     end)
-    or type(port_opt) == "function"
+    or type(url) == "function"
       and Promise.new(function(resolve, reject)
-        port_opt(function(port) ---@param port number|nil
-          if port then
-            resolve(port)
+        url(function(resolved_url) ---@param resolved_url string|nil
+          if resolved_url then
+            resolve(resolved_url)
           else
-            reject("Configured port resolved to `nil`")
+            reject("Configured `opencode` server URL resolved to `nil`")
           end
         end)
-      end):next(function(port)
-        return require("opencode.server").new(port)
+      end):next(function(resolved_url)
+        return require("opencode.server").new(resolved_url)
       end)
     or M.get_all():next(function(servers) ---@param servers opencode.server.Server[]
       local nvim_cwd = vim.fn.getcwd()
@@ -127,7 +125,7 @@ function M.get_all()
     end
   end):next(function(processes) ---@param processes opencode.server.discovery.process.Process[]
     return Promise.all_settled(vim.tbl_map(function(process) ---@param process opencode.server.discovery.process.Process
-      return require("opencode.server").new(process.port)
+      return require("opencode.server").new("http://localhost:" .. process.port)
     end, processes)):next(
       function(results) ---@param results { status: string, value?: opencode.server.Server, reason?: any }[]
         local servers = {}

@@ -167,6 +167,7 @@ function M.select(opts)
           return require("opencode").command(choice.name)
         end
       elseif choice.__type == "server" then
+        -- TODO: Include configured server
         if choice.name == "server.select" then
           return require("opencode.server.discovery")
             .get_all()

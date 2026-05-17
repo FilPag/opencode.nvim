@@ -1,10 +1,8 @@
 ---@class opencode.server.Opts
 ---
----The port to look for `opencode` on.
----When set, _only_ this port will be checked.
----When not set, _all_ `opencode` processes will be checked.
----Be sure to also launch `opencode` accordingly, e.g. `opencode --port 12345`.
----@field port? number|fun(callback: fun(port?: number))
+---Full URL of an `opencode` server, e.g. `"http://localhost:4096"`.
+---When set, bypasses local process discovery and connects directly.
+---@field url? string|fun(callback: fun(url?: string))
 ---
 ---Basic auth username.
 ---@field username? string
@@ -22,7 +20,7 @@
 
 ---An `opencode` server.
 ---@class opencode.server.Server
----@field port number
+---@field url string
 ---@field cwd string
 ---@field title string
 ---@field subagents opencode.server.Agent[]
@@ -34,11 +32,11 @@ Server.__index = Server
 ---Attempt to connect to an `opencode` server and fetch its health and details.
 ---Rejects if the health fails — the last line of defense against false-positive server discovery.
 ---Rejection message is non-empty if from a valid `opencode` server.
----@param port number
+---@param url string
 ---@return Promise<opencode.server.Server>
-function Server.new(port)
+function Server.new(url)
   local self = setmetatable({}, Server)
-  self.port = port
+  self.url = url:gsub("/$", "")
   self.heartbeat_timer = vim.uv.new_timer()
 
   local Promise = require("opencode.promise")
@@ -49,7 +47,7 @@ function Server.new(port)
       resolve(true)
     end, function(_, _, status) ---@param status number
       if status == 401 then
-        reject("Unauthorized response from `opencode` on port " .. self.port)
+        reject("Unauthorized response from `opencode` at " .. self:display_name())
       else
         reject()
       end
@@ -87,6 +85,13 @@ function Server.new(port)
     end)
 end
 
+---Human-readable name, stripping the protocol prefix.
+---@return string
+function Server:display_name()
+  local name = self.url:gsub("^%w+://", "")
+  return name
+end
+
 ---@param path string
 ---@param method "GET"|"POST"
 ---@param body table?
@@ -95,7 +100,7 @@ end
 ---@param opts? { persistent?: boolean }
 ---@return number job_id
 function Server:curl(path, method, body, on_success, on_error, opts)
-  local url = "http://localhost:" .. self.port .. path
+  local url = self.url .. path
   opts = opts or {
     persistent = false,
   }
@@ -377,7 +382,7 @@ function Server:connect()
             data = {
               event = response,
               -- Can't pass metatable through here, so listeners need to reconstruct the server object if they want to use its methods
-              port = self.port,
+              url = self.url,
             },
           })
         end

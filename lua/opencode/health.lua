@@ -91,14 +91,13 @@ function M.check()
   end
 
   -- Binaries for auto-finding `opencode` process (Unix only)
-  local has_port_configured = opts and opts.server and opts.server.port
-  if vim.fn.has("win32") == 0 and not has_port_configured then
+  if vim.fn.has("win32") == 0 and not (opts and opts.server and opts.server.url) then
     if vim.fn.executable("pgrep") == 1 then
       vim.health.ok("`pgrep` available.")
     else
       vim.health.error(
         "`pgrep` executable not found in `$PATH`.",
-        { "Install `pgrep` and ensure it's in your `$PATH`", "Or set `vim.g.opencode_opts.server.port`." }
+        { "Install `pgrep` and ensure it's in your `$PATH`", "Or set `vim.g.opencode_opts.server.url`." }
       )
     end
     if vim.fn.executable("lsof") == 1 then
@@ -106,7 +105,7 @@ function M.check()
     else
       vim.health.error(
         "`lsof` executable not found in `$PATH`.",
-        { "Install `lsof` and ensure it's in your `$PATH`", "Or set `vim.g.opencode_opts.server.port`." }
+        { "Install `lsof` and ensure it's in your `$PATH`", "Or set `vim.g.opencode_opts.server.url`." }
       )
     end
   end

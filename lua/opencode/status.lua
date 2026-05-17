@@ -34,8 +34,8 @@ end
 ---@return string
 function M.statusline()
   local connected_server = require("opencode.server").connected
-  local port = connected_server and connected_server.port
-  return M.statusline_icon() .. (port and (" :" .. tostring(port)) or "")
+  local url = connected_server and connected_server:display_name()
+  return M.statusline_icon() .. (url and (" " .. url) or "")
 end
 
 ---@param event opencode.server.Event

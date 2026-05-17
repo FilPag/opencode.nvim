@@ -184,7 +184,7 @@ Handlers[vim.lsp.protocol.Methods.textDocument_hover] = function(params, callbac
     -- But we still use `opencode run` instead of `prompt()` because this is a one-off,
     -- and shouldn't be added to current session.
     table.insert(cmd, "--attach")
-    table.insert(cmd, "http://localhost:" .. connected_server.port)
+    table.insert(cmd, connected_server.url)
   end
 
   local configured_model = require("opencode.config").opts.lsp.handlers.hover.model
