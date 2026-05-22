@@ -13,7 +13,7 @@ vim.g.opencode_opts = vim.g.opencode_opts
 
 ---@class opencode.Opts
 ---
----Where to look for an `opencode` server, and optionally how to manage one.
+---Connect to a specific `opencode` server, and optionally manage one.
 ---@field server? opencode.server.Opts
 ---
 ---Contexts to inject into prompts, keyed by their placeholder.
@@ -27,11 +27,11 @@ vim.g.opencode_opts = vim.g.opencode_opts
 ---Supports [`snacks.picker`](https://github.com/folke/snacks.nvim/blob/main/docs/picker.md).
 ---@field select? opencode.select.Opts
 ---
+---Options for handling `opencode` events.
+---@field events? opencode.events.Opts
+---
 ---Options for the in-process LSP that interacts with `opencode`.
 ---@field lsp? opencode.lsp.Opts
----
----Options for `opencode` event handling.
----@field events? opencode.events.Opts
 
 ---@type opencode.Opts
 local defaults = {
@@ -133,17 +133,6 @@ local defaults = {
       },
     },
   },
-  lsp = {
-    enabled = false,
-    filetypes = nil,
-    handlers = {
-      hover = {
-        enabled = true,
-        model = nil,
-      },
-      code_action = { enabled = true },
-    },
-  },
   events = {
     enabled = true,
     reload = true,
@@ -153,6 +142,17 @@ local defaults = {
       edits = {
         enabled = true,
       },
+    },
+  },
+  lsp = {
+    enabled = false,
+    filetypes = nil,
+    handlers = {
+      hover = {
+        enabled = true,
+        model = nil,
+      },
+      code_action = { enabled = true },
     },
   },
 }
