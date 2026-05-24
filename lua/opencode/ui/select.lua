@@ -169,7 +169,9 @@ function M.select(opts)
         end
       elseif choice.__type == "command" then
         if choice.name == "session.select" then
-          return require("opencode.ui.select_session").select_session()
+          return require("opencode.ui.select_session").select_session():next(function(result)
+            result.server:select_session(result.session.id)
+          end)
         else
           return require("opencode").command(choice.name)
         end
