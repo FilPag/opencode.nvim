@@ -4,6 +4,7 @@ local M = {}
 
 local winid
 local bufnr
+local exiting = false
 
 ---Start if not running, else show/hide the window.
 ---@param cmd string
@@ -63,6 +64,9 @@ function M.open(cmd, opts)
   vim.fn.jobstart(cmd, {
     term = true,
     on_exit = function()
+      if exiting then
+        return
+      end
       M.close()
     end,
   })
@@ -166,6 +170,7 @@ function M.setup(win)
   vim.api.nvim_create_autocmd("ExitPre", {
     once = true,
     callback = function()
+      exiting = true
       if pid then
         terminate(pid)
       end
