@@ -41,6 +41,8 @@ function M.open(cmd, opts)
 
   local previous_win = vim.api.nvim_get_current_win()
   bufnr = vim.api.nvim_create_buf(false, false)
+  vim.bo[bufnr].bufhidden = "wipe"
+  vim.bo[bufnr].buflisted = false
   winid = vim.api.nvim_open_win(bufnr, true, opts)
 
   M.setup(winid)
@@ -148,6 +150,8 @@ function M.setup(win)
       -- Because jobsttart runs with term=true, Neovim converts the created buffer
       -- into a terminal buffer which resets the keymaps. So we have to wait until the buffer
       -- is a terminal to apply our local keymaps.
+      vim.bo[event.buf].bufhidden = "wipe"
+      vim.bo[event.buf].buflisted = false
       keymaps(event.buf)
       -- Cache PID eagerly at terminal open time because by the time ExitPre fires,
       -- the job has been cleared and terminal_job_id is no longer available.
