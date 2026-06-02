@@ -42,16 +42,6 @@ function M.open(cmd, opts)
   bufnr = vim.api.nvim_create_buf(false, false)
   winid = vim.api.nvim_open_win(bufnr, true, opts)
 
-  vim.api.nvim_create_autocmd("ExitPre", {
-    once = true,
-    callback = function()
-      -- Delete the buffer so session doesn't save + restore it.
-      -- Not worth the complexity to handle a restored terminal,
-      -- and this is consistent with most other Neovim terminal plugins.
-      M.close()
-    end,
-  })
-
   M.setup(winid)
 
   -- Redraw terminal buffer on initial render.
