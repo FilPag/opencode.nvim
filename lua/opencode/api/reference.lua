@@ -35,7 +35,12 @@ function M.reference(text, context)
         return Promise.reject("No opencode TUI terminal found. Open one with `:vsplit term://opencode`.")
       end
 
-      vim.api.nvim_chan_send(buf, plaintext .. " ")
+      local channel = vim.bo[buf].channel
+      if not channel or channel == 0 then
+        return Promise.reject("The opencode TUI terminal has no channel.")
+      end
+
+      vim.fn.chansend(channel, plaintext .. " ")
     end)
     :next(function()
       context:clear()
