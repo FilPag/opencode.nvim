@@ -13,6 +13,18 @@ local function tui_buffer()
   end
 end
 
+---Whether `buf` resolves to real files, as opposed to literal text.
+---@param buf integer
+---@return boolean
+local function file_backed(buf)
+  if vim.bo[buf].filetype == "oil" then
+    return true
+  end
+  local name = vim.api.nvim_buf_get_name(buf)
+  local stat = name ~= "" and vim.uv.fs_stat(name) or nil
+  return stat ~= nil and stat.type == "file"
+end
+
 ---Type a rendered reference into the opencode TUI's prompt input.
 ---
 ---Sends keystrokes to the TUI's terminal, so it requires the TUI to be running
@@ -29,6 +41,9 @@ function M.reference(text, context)
   )
     :next(function(_text)
       local plaintext = context:render(_text).output:plaintext()
+      if _text:find("@", 1, true) and file_backed(context.buf) then
+        plaintext = "@" .. plaintext:gsub(", ", ", @")
+      end
 
       local buf = tui_buffer()
       if not buf then
