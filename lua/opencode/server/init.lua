@@ -279,13 +279,14 @@ function Server:prompt(session_id, text)
   return self:request("/api/session/" .. session_id .. "/prompt", "POST", { text = text })
 end
 
----Append text to the attached TUI's prompt input without submitting.
----Resolves `false` when no TUI is attached.
+---Add text to a session as synthetic input, without triggering a reply.
+---Synthetic input is context for the session, not an editable TUI prompt.
 ---
+---@param session_id string
 ---@param text string
----@return Promise<boolean?>
-function Server:append_prompt(text)
-  return self:request("/api/tui/append-prompt", "POST", { text = text })
+---@return Promise<any>
+function Server:synthetic(session_id, text)
+  return self:request("/api/session/" .. session_id .. "/synthetic", "POST", { text = text, resume = false })
 end
 
 ---Registered OpenCode command templates (built-in and user-defined).

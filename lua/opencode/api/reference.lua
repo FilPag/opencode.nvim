@@ -12,10 +12,8 @@ function M.reference(text, context)
     :next(function(_text)
       local plaintext = context:render(_text).output:plaintext()
 
-      return context.server:append_prompt(plaintext):next(function(appended)
-        if appended == false then
-          return Promise.reject("No OpenCode TUI attached. Attach one with `opencode attach`.")
-        end
+      return context.server:resolve_session():next(function(session)
+        return context.server:synthetic(session.id, plaintext)
       end)
     end)
     :next(function()

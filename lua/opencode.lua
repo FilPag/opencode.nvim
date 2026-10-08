@@ -63,9 +63,10 @@ function M.prompt(prompt)
     :catch(on_error)
 end
 
----Append a reference to the attached TUI's prompt input, without submitting.
+---Add a reference to the session as synthetic input, without triggering a reply.
 ---
 ---Renders context placeholders like `ask()` and `prompt()`.
+---Targets the most recently updated session for Neovim's directory.
 ---Defaults to `@this` (the current file or selection).
 ---Trailing "..." opens in `ask()`.
 ---
