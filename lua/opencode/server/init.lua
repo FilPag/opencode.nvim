@@ -285,7 +285,7 @@ end
 ---@param text string
 ---@return Promise<boolean?>
 function Server:append_prompt(text)
-  return self:request("/tui/append-prompt", "POST", { text = text })
+  return self:request("/api/tui/append-prompt", "POST", { text = text })
 end
 
 ---Registered OpenCode command templates (built-in and user-defined).
