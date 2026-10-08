@@ -291,6 +291,18 @@ Targets the most recently updated session for Neovim's directory.
 Injects configured contexts.
 Trailing "..." opens in `ask()`.
 
+### Reference — `require("opencode").reference()`
+
+Append a reference to the attached TUI's prompt input, without submitting.
+
+Renders context placeholders like Ask and Prompt.
+Defaults to `@this` (the current file or selection).
+Trailing "..." opens in `ask()`.
+
+```lua
+vim.keymap.set({ "n", "x" }, "<leader>l", function() require("opencode").reference() end, { desc = "Reference in OpenCode" })
+```
+
 ### Operator — `require("opencode").operator()`
 
 Wraps Prompt as an operator, supporting ranges and dot-repeat.
