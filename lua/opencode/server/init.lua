@@ -286,7 +286,11 @@ end
 ---@param text string
 ---@return Promise<any>
 function Server:synthetic(session_id, text)
-  return self:request("/api/session/" .. session_id .. "/synthetic", "POST", { text = text, resume = false })
+  return self:request(
+    "/api/session/" .. session_id .. "/synthetic",
+    "POST",
+    { text = text, resume = false, delivery = "queue" }
+  )
 end
 
 ---Registered OpenCode command templates (built-in and user-defined).
