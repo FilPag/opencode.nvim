@@ -212,6 +212,46 @@ local function get_buffer_range_text(bufnr, start_line, start_col, end_line, end
   return table.concat(lines, "\n")
 end
 
+---Make `path` relative to `rel` when it lives under it.
+---@param path string
+---@param rel? string
+---@return string
+local function relative(path, rel)
+  if not rel then
+    return path
+  end
+  local prefix = rel:match("/$") and rel or rel .. "/"
+  return path:find(prefix, 1, true) == 1 and path:sub(#prefix + 1) or path
+end
+
+---Resolve Oil buffer entries in a line range to file paths.
+---@param bufnr integer
+---@param start_line integer
+---@param end_line integer
+---@param rel? string
+---@return string?
+local function oil_paths(bufnr, start_line, end_line, rel)
+  local oil_ok, oil = pcall(require, "oil")
+  if not oil_ok then
+    return nil
+  end
+
+  local directory = oil.get_current_dir(bufnr)
+  if not directory then
+    return nil
+  end
+
+  local paths = {}
+  for line = start_line, end_line do
+    local entry = oil.get_entry_on_line(bufnr, line)
+    if entry and entry.name and entry.name ~= ".." then
+      table.insert(paths, relative(directory:gsub("/$", "") .. "/" .. entry.name, rel))
+    end
+  end
+
+  return #paths > 0 and table.concat(paths, ", ") or nil
+end
+
 ---Format a location for OpenCode.
 ---
 ---@param opts { path?: string, buf?: integer, from?: integer[], to?: integer[], rel?: string } One of `path` or `buf` is required. `from` and `to` are 1-based `{ line, col? }` tuples. `rel` is an optional path to format relative to, otherwise absolute.
@@ -219,7 +259,8 @@ end
 function Context.format(opts)
   assert(opts.path or opts.buf, "One of `opts.path` or `opts.buf` is required.")
   local filepath = opts.path or (opts.buf and vim.api.nvim_buf_get_name(opts.buf)) or nil
-  if not filepath or filepath == "" then
+  -- A path is required to mean anything; a nameless buffer falls through to its literal text.
+  if opts.path and (not filepath or filepath == "") then
     return nil
   end
 
@@ -238,6 +279,15 @@ function Context.format(opts)
     end
   end
 
+  -- Oil buffers list their parent directory, not a file. Resolve the cursor or
+  -- selection to the underlying entries so `@this` references real paths.
+  if opts.buf and start_line and vim.bo[opts.buf].filetype == "oil" then
+    local paths = oil_paths(opts.buf, start_line, end_line or start_line, opts.rel)
+    if paths then
+      return paths
+    end
+  end
+
   -- For buffers not backed by a real file, return inline text
   if opts.buf then
     local filestat = vim.uv.fs_stat(filepath)
@@ -252,13 +302,7 @@ function Context.format(opts)
     end
   end
 
-  local result = vim.fn.fnamemodify(filepath, ":p")
-  if opts.rel then
-    local prefix = opts.rel:match("/$") and opts.rel or opts.rel .. "/"
-    if result:find(prefix, 1, true) == 1 then
-      result = result:sub(#prefix + 1)
-    end
-  end
+  local result = relative(vim.fn.fnamemodify(filepath, ":p"), opts.rel)
   if start_line then
     result = result .. ":" .. string.format("L%d", start_line)
     if start_col then
