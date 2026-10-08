@@ -279,20 +279,6 @@ function Server:prompt(session_id, text)
   return self:request("/api/session/" .. session_id .. "/prompt", "POST", { text = text })
 end
 
----Add text to a session as synthetic input, without triggering a reply.
----Synthetic input is context for the session, not an editable TUI prompt.
----
----@param session_id string
----@param text string
----@return Promise<any>
-function Server:synthetic(session_id, text)
-  return self:request(
-    "/api/session/" .. session_id .. "/synthetic",
-    "POST",
-    { text = text, resume = false, delivery = "queue" }
-  )
-end
-
 ---Registered OpenCode command templates (built-in and user-defined).
 ---
 ---@return Promise<{ name: string, description?: string }[]>

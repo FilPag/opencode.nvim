@@ -63,22 +63,19 @@ function M.prompt(prompt)
     :catch(on_error)
 end
 
----Add a reference to the session as synthetic input, without triggering a reply.
+---Type a reference into the opencode TUI's prompt input.
 ---
 ---Renders context placeholders like `ask()` and `prompt()`.
----Targets the most recently updated session for Neovim's directory.
 ---Defaults to `@this` (the current file or selection).
 ---Trailing "..." opens in `ask()`.
 ---
+---Requires the TUI to be running in a Neovim terminal, e.g. `:vsplit term://opencode`.
+---
 ---@param prompt? string
 function M.reference(prompt)
-  require("opencode.server.discovery")
-    .get()
-    :next(function(server)
-      local context = require("opencode.context").new(server)
-      return require("opencode.api.reference").reference(prompt or "@this", context)
-    end)
-    :catch(on_error)
+  ---@diagnostic disable-next-line: param-type-mismatch
+  local context = require("opencode.context").new(nil)
+  require("opencode.api.reference").reference(prompt or "@this", context):catch(on_error)
 end
 
 ---Run a registered OpenCode [command](https://opencode.ai/v2/docs/commands/).

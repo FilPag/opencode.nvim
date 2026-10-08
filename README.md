@@ -293,12 +293,13 @@ Trailing "..." opens in `ask()`.
 
 ### Reference — `require("opencode").reference()`
 
-Add a reference to the session as synthetic input, without triggering a reply.
+Type a reference into the opencode TUI's prompt input, without submitting.
 
 Renders context placeholders like Ask and Prompt.
-Targets the most recently updated session for Neovim's directory.
 Defaults to `@this` (the current file or selection).
 Trailing "..." opens in `ask()`.
+
+Requires the TUI to be running in a Neovim terminal, e.g. `:vsplit term://opencode`.
 
 ```lua
 vim.keymap.set({ "n", "x" }, "<leader>l", function() require("opencode").reference() end, { desc = "Reference in OpenCode" })
